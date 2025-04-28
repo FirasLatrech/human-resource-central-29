@@ -4,12 +4,14 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   Users, 
   Building2, 
-  Calendar, 
+  Calendar,
   LayoutDashboard, 
-  BookOpen, 
+  BookOpen,
   UserPlus,
   Settings,
-  LogOut
+  LogOut,
+  Clock,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +52,8 @@ const Sidebar = () => {
   const secondaryNavItems = [
     { to: "/training", icon: BookOpen, label: "Training" },
     { to: "/recruitment", icon: UserPlus, label: "Recruitment" },
+    { to: "/benefits", icon: FileText, label: "Benefits & Salary" },
+    { to: "/positions", icon: Clock, label: "Positions & Grades" },
   ];
 
   return (
