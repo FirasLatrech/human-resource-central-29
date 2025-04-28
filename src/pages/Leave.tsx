@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import LeaveTable from "@/components/leave/LeaveTable";
+import { LeaveRequestDialog } from "@/components/leave/LeaveRequestDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Filter, PlusCircle } from "lucide-react";
+import { Calendar, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const Leave = () => {
@@ -105,10 +106,7 @@ const Leave = () => {
                 <Filter className="h-4 w-4" />
                 <span>Filter</span>
               </Button>
-              <Button size="sm" className="flex items-center gap-1">
-                <PlusCircle className="h-4 w-4" />
-                <span>New Request</span>
-              </Button>
+              <LeaveRequestDialog />
             </div>
           </div>
           
