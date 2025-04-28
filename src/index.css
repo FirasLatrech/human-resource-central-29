@@ -5,14 +5,14 @@
 
 @layer base {
   :root {
-    --background: 260 33% 98%;
+    --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222.2 47.4% 11.2%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222.2 47.4% 11.2%;
 
     --primary: 255 85% 75%;
     --primary-foreground: 210 40% 98%;
@@ -33,64 +33,43 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 255 85% 75%;
 
-    --radius: 0.5rem;
-
-    --sidebar-background: 220 33% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 255 85% 75%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 29% 54%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 255 85% 75%;
+    --radius: 1rem;
   }
 
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 255 85% 75%;
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 260 29% 54%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 199 82% 49%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 255 85% 75%;
-
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 255 85% 75%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 29% 54%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 255 85% 75%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+
+  ::selection {
+    @apply bg-hr-primary/20 text-hr-primary;
+  }
+
+  /* Modern scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full hover:bg-gray-300 transition-colors;
+  }
+}
+
+/* Utility classes for consistent spacing and modern UI elements */
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/50 backdrop-blur-sm border border-white/20 shadow-sm;
+  }
+
+  .content-auto {
+    content-visibility: auto;
   }
 }
