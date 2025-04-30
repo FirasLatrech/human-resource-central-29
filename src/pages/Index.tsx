@@ -2,16 +2,23 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Building2, Calendar, CheckCircle, Users } from "lucide-react";
+import { ArrowRight, Building2, Calendar, CheckCircle, Users, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { user, isAuthenticated } = useAuth();
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-hr-light to-white">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-hr-primary">HR Central</h1>
           <Button asChild variant="outline">
-            <Link to="/dashboard">Log In</Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard">Dashboard</Link>
+            ) : (
+              <Link to="/login">Log In</Link>
+            )}
           </Button>
         </div>
       </header>
@@ -28,7 +35,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" className="bg-hr-primary hover:bg-hr-primary/90">
-                  <Link to="/dashboard" className="flex items-center gap-2">
+                  <Link to={isAuthenticated ? "/dashboard" : "/login"} className="flex items-center gap-2">
                     Get Started <ArrowRight size={16} />
                   </Link>
                 </Button>
@@ -53,8 +60,8 @@ const Index = () => {
                     <h3 className="font-medium">Leave Management</h3>
                   </div>
                   <div className="bg-green-100 p-5 rounded-lg flex flex-col items-center text-center">
-                    <CheckCircle className="h-8 w-8 mb-2 text-green-600" />
-                    <h3 className="font-medium">Attendance Tracking</h3>
+                    <Shield className="h-8 w-8 mb-2 text-green-600" />
+                    <h3 className="font-medium">Role-based Access</h3>
                   </div>
                 </div>
               </div>
@@ -97,7 +104,7 @@ const Index = () => {
 
             <div className="mt-12 text-center">
               <Button asChild size="lg" className="bg-hr-primary hover:bg-hr-primary/90">
-                <Link to="/dashboard">Explore the Platform</Link>
+                <Link to={isAuthenticated ? "/dashboard" : "/login"}>Explore the Platform</Link>
               </Button>
             </div>
           </div>

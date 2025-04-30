@@ -1,12 +1,4 @@
 
-import React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -18,89 +10,120 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { CalendarIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { format, addDays, differenceInBusinessDays } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { DialogClose } from "@/components/ui/dialog";
 
-const leaveFormSchema = z.object({
-  leaveType: z.string({
-    required_error: "Please select a leave type.",
-  }),
-  startDate: z.date({
-    required_error: "A start date is required.",
-  }),
-  endDate: z.date({
-    required_error: "An end date is required.",
-  }).refine((date) => date > new Date(), {
-    message: "End date must be in the future",
-  }),
-  reason: z.string().min(5, "Reason must be at least 5 characters.").max(500, "Reason must not exceed 500 characters."),
-});
+interface LeaveRequestFormProps {
+  onSuccess?: () => void;
+}
 
-type LeaveFormValues = z.infer<typeof leaveFormSchema>;
-
-const defaultValues: Partial<LeaveFormValues> = {
-  leaveType: "",
-  reason: "",
+type FormValues = {
+  leaveType: string;
+  startDate: Date;
+  endDate: Date;
+  reason: string;
 };
 
-export function LeaveRequestForm() {
-  const form = useForm<LeaveFormValues>({
-    resolver: zodResolver(leaveFormSchema),
-    defaultValues,
+export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [businessDays, setBusinessDays] = useState(0);
+
+  const form = useForm<FormValues>({
+    defaultValues: {
+      leaveType: "",
+      reason: "",
+    },
   });
 
-  function onSubmit(data: LeaveFormValues) {
-    const duration = Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const { watch } = form;
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  // Calculate business days between dates
+  useEffect(() => {
+    if (startDate && endDate) {
+      const days = differenceInBusinessDays(endDate, startDate) + 1;
+      setBusinessDays(Math.max(0, days));
+    } else {
+      setBusinessDays(0);
+    }
+  }, [startDate, endDate]);
+
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
     
-    // In a real application, we would send this data to an API
-    console.log("Leave request submitted:", { ...data, duration });
+    // Simulate API request
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    toast.success("Leave request submitted successfully!", {
-      description: `${data.leaveType} request from ${format(data.startDate, "PPP")} to ${format(data.endDate, "PPP")} has been submitted.`,
+    // Create leave request object
+    const leaveRequest = {
+      id: `leave-${Date.now()}`,
+      employeeId: user?.id,
+      employeeName: user?.name,
+      leaveType: values.leaveType,
+      startDate: values.startDate,
+      endDate: values.endDate,
+      days: businessDays,
+      reason: values.reason,
+      status: "pending",
+      createdAt: new Date(),
+    };
+    
+    // Save to localStorage for demo purposes
+    const existingRequests = JSON.parse(localStorage.getItem("leaveRequests") || "[]");
+    existingRequests.push(leaveRequest);
+    localStorage.setItem("leaveRequests", JSON.stringify(existingRequests));
+    
+    toast({
+      title: "Leave Request Submitted",
+      description: "Your leave request has been submitted successfully.",
     });
     
-    form.reset();
-  }
+    setIsSubmitting(false);
+    
+    if (onSuccess) {
+      onSuccess();
+    }
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="leaveType"
+            rules={{ required: "Please select a leave type" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Leave Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select leave type" />
+                      <SelectValue placeholder="Select a leave type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Annual Leave">Annual Leave</SelectItem>
-                    <SelectItem value="Sick Leave">Sick Leave</SelectItem>
-                    <SelectItem value="Personal Leave">Personal Leave</SelectItem>
-                    <SelectItem value="Maternity/Paternity Leave">Maternity/Paternity Leave</SelectItem>
-                    <SelectItem value="Unpaid Leave">Unpaid Leave</SelectItem>
+                    <SelectItem value="annual">Annual Leave</SelectItem>
+                    <SelectItem value="sick">Sick Leave</SelectItem>
+                    <SelectItem value="personal">Personal Leave</SelectItem>
+                    <SelectItem value="maternity">Maternity Leave</SelectItem>
+                    <SelectItem value="paternity">Paternity Leave</SelectItem>
+                    <SelectItem value="unpaid">Unpaid Leave</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  Select the type of leave you are requesting.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -109,6 +132,7 @@ export function LeaveRequestForm() {
           <FormField
             control={form.control}
             name="startDate"
+            rules={{ required: "Start date is required" }}
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Start Date</FormLabel>
@@ -118,7 +142,7 @@ export function LeaveRequestForm() {
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -136,16 +160,11 @@ export function LeaveRequestForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
+                      disabled={(date) => date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>
-                  The first day of your leave.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -154,6 +173,15 @@ export function LeaveRequestForm() {
           <FormField
             control={form.control}
             name="endDate"
+            rules={{ 
+              required: "End date is required",
+              validate: (value) => {
+                if (startDate && value < startDate) {
+                  return "End date must be after start date";
+                }
+                return true;
+              }
+            }}
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>End Date</FormLabel>
@@ -163,7 +191,7 @@ export function LeaveRequestForm() {
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -181,50 +209,58 @@ export function LeaveRequestForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => {
-                        const startDate = form.getValues("startDate");
-                        return (
-                          date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                          (startDate && date < startDate)
-                        );
-                      }}
+                      disabled={(date) => startDate ? date < startDate : date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>
-                  The last day of your leave.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="reason"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reason</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Please provide a reason for your leave request..."
-                    className="resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Briefly describe the reason for your leave request.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Duration</FormLabel>
+            <Input value={`${businessDays} business day(s)`} readOnly className="bg-gray-50" />
+            <FormDescription>
+              Calculated based on business days
+            </FormDescription>
+          </FormItem>
         </div>
 
-        <Button type="submit" className="w-full md:w-auto">
-          Submit Leave Request
-        </Button>
+        <FormField
+          control={form.control}
+          name="reason"
+          rules={{ required: "Reason is required" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Reason for Leave</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Please provide details about the reason for your leave request" 
+                  {...field} 
+                  className="h-20"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-4">
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button 
+            type="submit" 
+            className="bg-hr-primary hover:bg-hr-primary/90" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Request"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
