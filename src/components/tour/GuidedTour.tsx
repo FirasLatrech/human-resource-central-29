@@ -1,21 +1,22 @@
 
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import JoyRide, { STATUS, CallBackProps, ACTIONS } from "react-joyride";
+import JoyRide, { CallBackProps, STATUS, ACTIONS } from "react-joyride";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
 // Define the strict placement type
-type Placement = "top" | "bottom" | "left" | "right";
+type Placement = "top" | "bottom" | "left" | "right" | "center";
 
 // Define the step type with strict placement
 interface TourStep {
   target: string;
   content: React.ReactNode;
   title: string;
-  placement: Placement; // Ensure placement is strictly typed
+  placement: Placement;
   disableBeacon?: boolean;
+  index?: number;
 }
 
 const GuidedTour: React.FC = () => {
@@ -102,19 +103,23 @@ const GuidedTour: React.FC = () => {
       target: "body",
       content: "Welcome to the HR Management System! This tour will guide you through the main features.",
       title: "Welcome",
-      placement: "center" as unknown as Placement, // Handle special case for body
+      placement: "center",
+      disableBeacon: true,
+      index: 0
     },
     {
       target: "#dashboard-stats",
       content: "Here you can see key metrics for your organization at a glance.",
       title: "Dashboard Statistics",
       placement: "bottom",
+      index: 1
     },
     {
       target: "#recent-activities",
       content: "View recent activities across the system to stay informed about changes.",
       title: "Recent Activities",
       placement: "top",
+      index: 2
     }
   ];
 
@@ -124,12 +129,14 @@ const GuidedTour: React.FC = () => {
       content: "Here you can view and manage all employees in your organization.",
       title: "Employee Management",
       placement: "top",
+      index: 0
     },
     {
       target: "#add-employee-button",
       content: "Click here to add a new employee to the system.",
       title: "Add Employee",
       placement: "bottom",
+      index: 1
     }
   ];
 
@@ -139,12 +146,14 @@ const GuidedTour: React.FC = () => {
       content: "View all leave requests and their status.",
       title: "Leave Requests",
       placement: "top",
+      index: 0
     },
     {
       target: "#request-leave-button",
       content: "Click here to submit a new leave request.",
       title: "Request Leave",
       placement: "right",
+      index: 1
     }
   ];
 
