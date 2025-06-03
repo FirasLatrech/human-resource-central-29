@@ -2,14 +2,24 @@
 
 ## Project Info
 
-<!-- Add a brief project description here -->
+This project is a Human Resources Management Platform designed to streamline various HR processes within an organization.
 
 **URL**: https://human-resource-central.lovable.app/
+
 **DESIGN**: https://www.figma.com/design/eCNF6YBnTLAVZd6erM7Z0N/HR?node-id=0-1&m=dev&t=UxRWQRhVxHRz4LQI-1
 
 ## Features
 
-<!-- List the key features of the project here -->
+- User authentication
+- Employee record management
+- Job offer creation and management
+- Candidate application process
+- Employee contract generation
+- Department and group management
+- Salary calculation with deductions and benefits
+- Online leave request system
+- Candidate evaluation and interview planning
+- Admin dashboard for HR decision-making
 
 ## Technologies Used
 
@@ -20,6 +30,18 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## Software Design
+
+### Architecture
+
+The system employs a modular microservice architecture with the following components:
+
+- Authentication Service
+- Employee Management Service
+- Recruitment Service
+- Payroll Service
+- Leave Management Service
 
 ## How can I edit this code?
 
@@ -65,12 +87,12 @@ npm run dev
 
 ## Usage
 
-<!-- Explain how to use the project here -->
+This platform provides different functionalities based on user roles (employee, relationship officer, recruiter, cashier, HR officer, manager). Users can authenticate, manage employee data, handle job applications, generate contracts, manage departments, calculate salaries, request leave, evaluate candidates, and view dashboards.
 
-## Contributing
+## Team
 
-<!-- Add guidelines for contributing here -->
-
-## License
-
-<!-- Add license information here -->
+- Firas latrech
+- Mohamed Amine Slimani
+- Abdelaziz naija
+- Oussema ben hassena
+- Farouk achour
