@@ -1,8 +1,24 @@
-# Welcome to your Lovable project
+# Welcome to your project
 
-## Project info
+## Project Info
+
+<!-- Add a brief project description here -->
 
 **URL**: https://lovable.dev/projects/ca18bf74-7072-4a20-ba19-07cb863fc604
+
+## Features
+
+<!-- List the key features of the project here -->
+
+## Technologies Used
+
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
 ## How can I edit this code?
 
@@ -50,24 +66,16 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Installation and Setup
 
-This project is built with:
+## Usage
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+<!-- Explain how to use the project here -->
 
-## How can I deploy this project?
+## Contributing
 
-Simply open [Lovable](https://lovable.dev/projects/ca18bf74-7072-4a20-ba19-07cb863fc604) and click on Share -> Publish.
+<!-- Add guidelines for contributing here -->
 
-## Can I connect a custom domain to my Lovable project?
+## License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+<!-- Add license information here -->
