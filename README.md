@@ -4,7 +4,8 @@
 
 <!-- Add a brief project description here -->
 
-**URL**: https://lovable.dev/projects/ca18bf74-7072-4a20-ba19-07cb863fc604
+**URL**: https://human-resource-central.lovable.app/
+**DESIGN**: https://www.figma.com/design/eCNF6YBnTLAVZd6erM7Z0N/HR?node-id=0-1&m=dev&t=UxRWQRhVxHRz4LQI-1
 
 ## Features
 
@@ -23,12 +24,6 @@ This project is built with:
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/ca18bf74-7072-4a20-ba19-07cb863fc604) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
