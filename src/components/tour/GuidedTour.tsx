@@ -1,172 +1,236 @@
 
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import JoyRide, { STATUS, CallBackProps, ACTIONS } from "react-joyride";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Check, ChevronRight, HelpCircle, Info, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
-// Define the strict placement type
-type Placement = "top" | "bottom" | "left" | "right";
-
-// Define the step type with strict placement
 interface TourStep {
-  target: string;
-  content: React.ReactNode;
   title: string;
-  placement: Placement; // Ensure placement is strictly typed
-  disableBeacon?: boolean;
+  description: string;
+  target?: string; // CSS selector for the element to highlight
+  placement?: "right" | "left" | "top" | "bottom";
 }
 
+// Tour steps based on user role
+const getTourSteps = (role: string): { [key: string]: TourStep[] } => {
+  const commonSteps = [
+    {
+      title: "Welcome to HR Central",
+      description: "This guided tour will show you how to use the HR Central platform effectively.",
+    },
+    {
+      title: "Navigation Sidebar",
+      description: "Use the sidebar to navigate between different sections of the application.",
+      target: "aside",
+      placement: "right",
+    },
+    {
+      title: "Dashboard Overview",
+      description: "The dashboard gives you a quick overview of the key metrics and recent activities.",
+      target: "main",
+      placement: "left",
+    }
+  ];
+
+  const adminSteps = [
+    ...commonSteps,
+    {
+      title: "Employee Management",
+      description: "As an admin, you can add, edit, and delete employee records. You also have access to all departments and positions.",
+    },
+    {
+      title: "Leave Approval",
+      description: "Review and approve leave requests from employees through the Leave section.",
+    },
+    {
+      title: "Reports and Analytics",
+      description: "Access comprehensive reports and analytics to make data-driven decisions.",
+    }
+  ];
+
+  const managerSteps = [
+    ...commonSteps,
+    {
+      title: "Team Management",
+      description: "As a manager, you can view employees in your department and manage their leave requests.",
+    },
+    {
+      title: "Leave Approval",
+      description: "Review and approve leave requests from employees in your department.",
+    },
+    {
+      title: "Training Management",
+      description: "Assign training modules to your team members and track their progress.",
+    }
+  ];
+
+  const employeeSteps = [
+    ...commonSteps,
+    {
+      title: "Your Profile",
+      description: "View and update your personal information and employment details.",
+    },
+    {
+      title: "Leave Requests",
+      description: "Submit leave requests and check their approval status.",
+    },
+    {
+      title: "Training Modules",
+      description: "Access assigned training modules and track your progress.",
+    }
+  ];
+
+  return {
+    admin: adminSteps,
+    manager: managerSteps,
+    employee: employeeSteps,
+    // Default to common steps if role not recognized
+    default: commonSteps,
+  };
+};
+
 const GuidedTour: React.FC = () => {
-  const [run, setRun] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const { user } = useAuth();
   const location = useLocation();
-  const [steps, setSteps] = useState<TourStep[]>([]);
-  const { toast } = useToast();
+  const [tourCompleted, setTourCompleted] = useState<boolean>(() => {
+    return localStorage.getItem("tourCompleted") === "true";
+  });
+  
+  const role = user?.role || "default";
+  const steps = getTourSteps(role)[role] || getTourSteps("default").default;
 
+  // Open the tour automatically on first visit to dashboard
   useEffect(() => {
-    // Check if tour has been completed before
-    const tourCompleted = localStorage.getItem("tourCompleted");
-    
-    if (location.pathname === "/dashboard" && !tourCompleted) {
-      setRun(true);
-      setSteps(dashboardSteps);
-    } else if (location.pathname === "/employees" && !tourCompleted) {
-      setRun(true);
-      setSteps(employeesSteps);
-    } else if (location.pathname === "/leave" && !tourCompleted) {
-      setRun(true);
-      setSteps(leaveSteps);
+    if (location.pathname === "/dashboard" && !tourCompleted && user) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, tourCompleted, user]);
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     } else {
-      setRun(false);
-    }
-  }, [location.pathname]);
-
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action } = data;
-
-    if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
-      setRun(false);
-      // Mark tour as completed in localStorage
-      localStorage.setItem("tourCompleted", "true");
-      
-      // Show toast when tour is completed or skipped
-      toast({
-        title: status === STATUS.FINISHED ? "Tour Completed!" : "Tour Skipped",
-        description: status === STATUS.FINISHED 
-          ? "You've completed the guided tour. You can restart it anytime from the help menu."
-          : "You've skipped the guided tour. You can restart it anytime from the help menu.",
-      });
-    }
-
-    // If user presses back button, restart the tour
-    if (action === ACTIONS.RESET) {
-      setRun(true);
+      completeTour();
     }
   };
 
-  const Tooltip = ({
-    step,
-    tooltipProps,
-    isLastStep,
-    primaryProps,
-    skipProps,
-    backProps,
-  }: any) => (
-    <Card className="w-80 p-0 z-50">
-      <CardContent className="p-4">
-        <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
-        <div className="text-sm text-muted-foreground mb-4">{step.content}</div>
-        
-        <div className="flex justify-between">
-          {step.index > 0 && (
-            <Button variant="outline" size="sm" {...backProps}>
-              Back
-            </Button>
-          )}
-          <div className="grow" />
-          <Button variant="ghost" size="sm" {...skipProps}>
-            Skip
-          </Button>
-          <Button size="sm" {...primaryProps}>
-            {isLastStep ? "Finish" : "Next"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  // Define tour steps for each section with proper typing
-  const dashboardSteps: TourStep[] = [
-    {
-      target: "body",
-      content: "Welcome to the HR Management System! This tour will guide you through the main features.",
-      title: "Welcome",
-      placement: "center" as unknown as Placement, // Handle special case for body
-    },
-    {
-      target: "#dashboard-stats",
-      content: "Here you can see key metrics for your organization at a glance.",
-      title: "Dashboard Statistics",
-      placement: "bottom",
-    },
-    {
-      target: "#recent-activities",
-      content: "View recent activities across the system to stay informed about changes.",
-      title: "Recent Activities",
-      placement: "top",
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
-  ];
+  };
 
-  const employeesSteps: TourStep[] = [
-    {
-      target: "#employee-table",
-      content: "Here you can view and manage all employees in your organization.",
-      title: "Employee Management",
-      placement: "top",
-    },
-    {
-      target: "#add-employee-button",
-      content: "Click here to add a new employee to the system.",
-      title: "Add Employee",
-      placement: "bottom",
-    }
-  ];
+  const completeTour = () => {
+    localStorage.setItem("tourCompleted", "true");
+    setTourCompleted(true);
+    setIsOpen(false);
+    setCurrentStep(0);
+  };
 
-  const leaveSteps: TourStep[] = [
-    {
-      target: "#leave-requests",
-      content: "View all leave requests and their status.",
-      title: "Leave Requests",
-      placement: "top",
-    },
-    {
-      target: "#request-leave-button",
-      content: "Click here to submit a new leave request.",
-      title: "Request Leave",
-      placement: "right",
-    }
-  ];
+  const restartTour = () => {
+    localStorage.removeItem("tourCompleted");
+    setTourCompleted(false);
+    setCurrentStep(0);
+    setIsOpen(true);
+  };
 
-  if (!run || steps.length === 0) return null;
+  const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <JoyRide
-      steps={steps}
-      run={run}
-      continuous
-      scrollToFirstStep
-      showProgress
-      showSkipButton
-      callback={handleJoyrideCallback}
-      styles={{
-        options: {
-          primaryColor: "#6366f1", // Use primary color from our theme
-          zIndex: 1000,
-        },
-      }}
-      tooltipComponent={Tooltip}
-    />
+    <>
+      {/* Help button to trigger tour */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg bg-white border-hr-primary/30 hover:bg-hr-primary/10"
+        onClick={() => setIsOpen(true)}
+      >
+        <HelpCircle className="h-6 w-6 text-hr-primary" />
+      </Button>
+
+      {/* Tour dialog */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{steps[currentStep].title}</DialogTitle>
+            <DialogDescription>
+              {steps[currentStep].description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* Progress indicator */}
+          <div className="flex justify-center mt-4">
+            {steps.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1 w-8 mx-1 rounded-full ${
+                  index === currentStep ? "bg-hr-primary" : "bg-gray-200"
+                }`}
+              />
+            ))}
+          </div>
+
+          <DialogFooter className="flex flex-row justify-between sm:justify-between">
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 0}
+                className="mr-2"
+              >
+                Previous
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="bg-hr-primary hover:bg-hr-primary/90"
+              >
+                {isLastStep ? "Finish" : "Next"}
+                {!isLastStep && <ChevronRight className="ml-1 h-4 w-4" />}
+                {isLastStep && <Check className="ml-1 h-4 w-4" />}
+              </Button>
+            </div>
+            {!isLastStep && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={completeTour}
+                className="text-gray-500"
+              >
+                Skip tour
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Feature highlight sheet - for targeted help */}
+      {steps[currentStep].target && (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetContent side={steps[currentStep].placement as any || "right"}>
+            <SheetHeader>
+              <SheetTitle>{steps[currentStep].title}</SheetTitle>
+              <SheetDescription>{steps[currentStep].description}</SheetDescription>
+            </SheetHeader>
+            <SheetFooter className="mt-auto">
+              <Button onClick={handleNext} className="bg-hr-primary hover:bg-hr-primary/90">
+                {isLastStep ? "Finish" : "Next"} 
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      )}
+    </>
   );
 };
 
